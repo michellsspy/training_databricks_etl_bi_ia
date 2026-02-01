@@ -2,14 +2,15 @@ resources:
   pipelines:
     my_project_etl:
       name: ${bundle.target}_my_project_etl
-      # Use o catálogo que você criou
       catalog: development
-      # O target no DLT é o SCHEMA de destino
-      target: bronze 
+      target: bronze
       serverless: true
 
       libraries:
-        - file:
-            path: ../src/my_project_etl/transformations/02_bronze/bronze_hospedes.py
-
-      # Remova a seção 'clusters' se ela existir, pois serverless não aceita definições de cluster
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_hospedes.py }
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_hoteis.py }
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_quartos.py }
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_reservas.py }
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_consumos.py }
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_faturas.py }
+        - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_reservas_ota.py }
