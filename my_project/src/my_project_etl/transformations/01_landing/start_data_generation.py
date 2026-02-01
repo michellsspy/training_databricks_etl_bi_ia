@@ -522,71 +522,50 @@ def gerar_dependentes(df_hoteis, df_quartos, df_hospedes, num_reservas=15000):
     # MODIFICADO: Retorna o novo DataFrame
     return df_reservas, df_consumos, df_faturas, df_reservas_ota
 
-# Célula 6: Execução Principal 
-from datetime import datetime
-
-def run_landing_generation():
-    # Metadados de Execução
-    SISTEMA = "hotel_management"
-    DATA_REF = datetime.now()
-    ANO, MES, DIA = DATA_REF.strftime("%Y"), DATA_REF.strftime("%m"), DATA_REF.strftime("%d")
+# Célula 6: Execução Principal (MODIFICADA)
+def run_generation():
+    CATALOG = "dev"
+    SCHEMA = "transient"
     
-    # Path Raiz da Landing Zone (Transient)
-    # No Community, simulamos no DBFS
-    PATH_LANDING = f"dbfs:/mnt/landing/{SISTEMA}"
+    spark.sql(f"CREATE CATALOG IF NOT EXISTS {CATALOG}")
+    spark.sql(f"CREATE SCHEMA IF NOT EXISTS {CATALOG}.{SCHEMA}")
+    
+    print("--- Gerando Hoteis ---")
+    df_hoteis = gerar_hoteis(num_hoteis=50)
+    df_hoteis.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_hoteis")
+    print(f"{df_hoteis.count()} registros de hoteis salvos em {CATALOG}.{SCHEMA}.source_hoteis")
 
-    print("="*80)
-    print(f"INICIANDO GERAÇÃO LANDING | MODO: FULL (MOCK) | DATA: {DATA_REF.strftime('%Y-%m-%d %H:%M:%S')}")
-    print("="*80)
+    print("\n--- Gerando Quartos ---")
+    df_quartos = gerar_quartos(df_hoteis)
+    df_quartos.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_quartos")
+    print(f"{df_quartos.count()} registros de quartos salvos em {CATALOG}.{SCHEMA}.source_quartos")
 
-    try:
-        # 1. Hoteis
-        print(f"[*] Gerando Entidade: Hoteis...")
-        df_hoteis = gerar_hoteis(num_hoteis=50)
-        dest_hoteis = f"{PATH_LANDING}/hoteis/ano={ANO}/mes={MES}/dia={DIA}/"
-        df_hoteis.write.mode("overwrite").parquet(dest_hoteis)
-        print(f"[i] Volumetria: {df_hoteis.count()} registros.")
-        print(f"└─ Status: ✅ SUCESSO | Destino: {dest_hoteis}")
+    print("\n--- Gerando Hóspedes ---")
+    df_hospedes = gerar_hospedes(num_hospedes=8000)
+    df_hospedes.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_hospedes")
+    print(f"{df_hospedes.count()} registros de hóspedes salvos em {CATALOG}.{SCHEMA}.source_hospedes")
 
-        # 2. Quartos
-        print(f"[*] Gerando Entidade: Quartos...")
-        df_quartos = gerar_quartos(df_hoteis)
-        dest_quartos = f"{PATH_LANDING}/quartos/ano={ANO}/mes={MES}/dia={DIA}/"
-        df_quartos.write.mode("overwrite").parquet(dest_quartos)
-        print(f"[i] Volumetria: {df_quartos.count()} registros.")
-        print(f"└─ Status: ✅ SUCESSO | Destino: {dest_quartos}")
+    print("\n--- Gerando Reservas, Consumos, Faturas e Reservas OTA ---") # Título atualizado
+    # MODIFICADO: Captura o novo DataFrame
+    df_reservas, df_consumos, df_faturas, df_reservas_ota = gerar_dependentes(
+        df_hoteis, df_quartos, df_hospedes, 
+        num_reservas=15000
+    )
+    
+    df_reservas.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_reservas")
+    print(f"{df_reservas.count()} registros de reservas salvos em {CATALOG}.{SCHEMA}.source_reservas")
+    
+    df_consumos.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_consumos")
+    print(f"{df_consumos.count()} registros de consumos salvos em {CATALOG}.{SCHEMA}.source_consumos")
 
-        # 3. Hóspedes
-        print(f"[*] Gerando Entidade: Hospedes...")
-        df_hospedes = gerar_hospedes(num_hospedes=8000)
-        dest_hospedes = f"{PATH_LANDING}/hospedes/ano={ANO}/mes={MES}/dia={DIA}/"
-        df_hospedes.write.mode("overwrite").parquet(dest_hospedes)
-        print(f"[i] Volumetria: {df_hospedes.count()} registros.")
-        print(f"└─ Status: ✅ SUCESSO | Destino: {dest_hospedes}")
+    df_faturas.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_faturas")
+    print(f"{df_faturas.count()} registros de faturas salvos em {CATALOG}.{SCHEMA}.source_faturas")
+    
+    # NOVO: Bloco para salvar a tabela reservas_ota
+    df_reservas_ota.write.mode("overwrite").saveAsTable(f"{CATALOG}.{SCHEMA}.source_reservas_ota")
+    print(f"{df_reservas_ota.count()} registros de reservas OTA salvos em {CATALOG}.{SCHEMA}.source_reservas_ota")
+    
+    print("\n--- Processo de Geração Concluído! ---")
 
-        # 4. Dependentes (Reservas, Consumos, Faturas, OTA)
-        print(f"[*] Gerando Entidades Dependentes (Reservas, Consumos, Faturas, OTA)...")
-        df_res, df_cons, df_fat, df_ota = gerar_dependentes(df_hoteis, df_quartos, df_hospedes, num_reservas=15000)
-        
-        entidades = {
-            "reservas": df_res, 
-            "consumos": df_cons, 
-            "faturas": df_fat, 
-            "reservas_ota": df_ota
-        }
-
-        for nome, df in entidades.items():
-            dest = f"{PATH_LANDING}/{nome}/ano={ANO}/mes={MES}/dia={DIA}/"
-            df.write.mode("overwrite").parquet(dest)
-            print(f"└─ {nome.upper()}: ✅ SUCESSO | Linhas: {df.count()}")
-
-    except Exception as e:
-        print(f"❌ FALHA: Erro na geração dos dados da Landing. Detalhes: {str(e)}")
-        raise e
-
-    print("="*80)
-    print("PROCESSO FINALIZADO | LANDING ZONE POPULADA")
-    print("="*80)
-
-# Executa o processo
-run_landing_generation()
+# Executa a função principal
+run_generation()
