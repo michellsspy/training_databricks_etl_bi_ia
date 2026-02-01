@@ -1,0 +1,47 @@
+# This is a Databricks asset bundle definition for training_databricks_etl_bi_ia.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: training_databricks_etl_bi_ia
+  uuid: 9d6c01d4-ffdd-41ef-9e72-83d5d0c5a200
+
+include:
+  - resources/*.yml
+  - resources/*/*.yml
+
+artifacts:
+  python_artifact:
+    type: whl
+    build: uv build --wheel
+
+# Variable declarations. These variables are assigned in the dev/prod targets below.
+variables:
+  catalog:
+    description: The catalog to use
+  schema:
+    description: The schema to use
+
+targets:
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-57328b27-9cd1.cloud.databricks.com
+    variables:
+      catalog: prod
+      schema: ${workspace.current_user.short_name}
+  prod:
+    mode: production
+    workspace:
+      host: https://dbc-57328b27-9cd1.cloud.databricks.com
+      # We explicitly deploy to /Workspace/Users/michel.treino01@gmail.com to make sure we only have a single copy.
+      root_path: /Workspace/Users/michel.treino01@gmail.com/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: prod
+      schema: prod
+    permissions:
+      - user_name: michel.treino01@gmail.com
+        level: CAN_MANAGE
