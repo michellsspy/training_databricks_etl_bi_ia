@@ -206,3 +206,87 @@ databricks bundle run my_project_etl
 
 ```
 
+
+Parabéns, Michel! Chegar nesse nível de automação — com pipelines separados, injeção de variáveis de ambiente e orquestração via Jobs — é o que diferencia um Engenheiro de Dados iniciante de um **Arquiteto de Soluções**.
+
+Aqui está a documentação técnica da Camada Silver para o seu repositório. Este documento servirá como a "fonte da verdade" para qualquer pessoa (ou IA) que precise entender o que acontece entre o dado bruto e o dado pronto para o BI.
+
+---
+
+# 🥈 Documentação Técnica: Camada Silver
+
+## 1. Visão Geral
+
+A Camada Silver do projeto **Hotel Management** é responsável por transformar os dados brutos (Bronze) em tabelas normalizadas, tipadas e validadas. O principal objetivo é garantir a consistência dos dados para o consumo analítico, aplicando regras de negócio e versionamento histórico.
+
+## 2. Arquitetura de Processamento
+
+* **Motor:** Delta Live Tables (DLT).
+* **Orquestração:** Databricks Workflows (Job) com dependência entre camadas.
+* **Catálogo:** Dinâmico (Unity Catalog), injetado via Databricks Asset Bundles (DABs).
+* **Estratégia de Carga:** * **SCD Tipo 1:** Sobrescrita de registros existentes para manter o estado atual (Hotéis, Quartos, Reservas, Consumos, Faturas, OTAs).
+* **SCD Tipo 2:** Histórico completo de alterações (Hóspedes).
+
+
+
+---
+
+## 3. Matriz de Entidades e Transformações
+
+| Tabela Silver | Origem (Bronze) | Tipo de Histórico | Principais Transformações |
+| --- | --- | --- | --- |
+| `silver_hospedes` | `bronze_hospedes` | **SCD Tipo 2** | Normalização de CPF, Initcap em nomes, Email em lowercase. |
+| `silver_hoteis` | `bronze_hoteis` | SCD Tipo 1 | Casting de Latitude/Longitude (Decimal 18,4), Padronização de Estados. |
+| `silver_reservas` | `bronze_reservas` | SCD Tipo 1 | Cálculo de precisão financeira, casting de datas e status. |
+| `silver_quartos` | `bronze_quartos` | SCD Tipo 1 | Tipagem booleana (ar-condicionado, fumante) e preços decimais. |
+| `silver_consumos` | `bronze_consumos` | SCD Tipo 1 | Precisão de 4 casas decimais em valores de serviços. |
+| `silver_faturas` | `bronze_faturas` | SCD Tipo 1 | Validação de data de vencimento e integridade de impostos. |
+| `silver_reservas_ota` | `bronze_reservas_ota` | SCD Tipo 1 | Conciliação de taxas de comissão e valor líquido. |
+
+---
+
+## 4. Padrões de Qualidade (Data Quality)
+
+Implementamos **Expectations** para impedir que dados logicamente incorretos poluam o Data Lakehouse:
+
+* **Integridade Referencial:** IDs mandatórios não nulos.
+* **Sanidade Financeira:** Valores totais, diárias e consumos devem ser `>= 0`.
+* **Lógica Temporal:** `data_checkout >= data_checkin` e `data_vencimento >= data_emissao`.
+* **Formatação:** Emails devem seguir o padrão `%@%.%` e CPFs devem ter 11 dígitos.
+
+---
+
+## 5. Estrutura de Injeção de Variáveis (CI/CD)
+
+Para garantir a portabilidade entre ambientes (Dev/Prod), utilizamos o objeto `spark.conf` para capturar o catálogo alvo definido no deploy:
+
+```python
+# Exemplo de leitura dinâmica
+current_catalog = spark.conf.get("project.catalog")
+source_table = f"{current_catalog}.bronze.bronze_hotel_management_reservas"
+
+```
+
+---
+
+## 6. Como Executar
+
+O deploy e a execução são feitos via terminal utilizando o Databricks CLI:
+
+1. **Validar:** `databricks bundle validate`
+2. **Deploy:** `databricks bundle deploy -t dev`
+3. **Executar:** `databricks bundle run main_etl_hotel_job`
+
+---
+
+### Registro de Observabilidade Visual
+
+```plaintext
+================================================================================
+DOC CHECKPOINT | STATUS: DOCUMENTAÇÃO CONCLUÍDA | DATA: 2026-02-01
+================================================================================
+[*] Camada: Silver (Normalização).
+[*] Framework: Markdown + DLT Metadata.
+└─ Status: ✅ PRONTO PARA O REPOSITÓRIO.
+================================================================================
+

@@ -12,7 +12,7 @@ resources:
         # Task 02: Dispara o Pipeline Silver APÓS o Bronze
         - task_key: run_silver_pipeline
           depends_on:
-            - task_key: run_bronze_pipeline  # O SEGREDO ESTÁ AQUI
+            - task_key: run_bronze_pipeline  # O SEGREDO ESTÁ AQUI (Cria a dependência  entre as tasks)
           pipeline_task:
             pipeline_id: ${resources.pipelines.my_project_silver.id}
       
