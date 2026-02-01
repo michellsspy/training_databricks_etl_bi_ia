@@ -204,12 +204,6 @@ Os scripts são versionados como arquivos `.py` e orquestrados via Databricks As
 databricks bundle deploy
 databricks bundle run my_project_etl
 
-```
-
-
-Parabéns, Michel! Chegar nesse nível de automação — com pipelines separados, injeção de variáveis de ambiente e orquestração via Jobs — é o que diferencia um Engenheiro de Dados iniciante de um **Arquiteto de Soluções**.
-
-Aqui está a documentação técnica da Camada Silver para o seu repositório. Este documento servirá como a "fonte da verdade" para qualquer pessoa (ou IA) que precise entender o que acontece entre o dado bruto e o dado pronto para o BI.
 
 ---
 
