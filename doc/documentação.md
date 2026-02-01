@@ -205,8 +205,6 @@ databricks bundle deploy
 databricks bundle run my_project_etl
 
 
----
-
 # 🥈 Documentação Técnica: Camada Silver
 
 ## 1. Visão Geral
