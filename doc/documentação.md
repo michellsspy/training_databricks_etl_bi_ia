@@ -270,7 +270,7 @@ O deploy e a execução são feitos via terminal utilizando o Databricks CLI:
 
 1. **Validar:** `databricks bundle validate`
 2. **Deploy:** `databricks bundle deploy -t dev`
-3. **Executar:** `databricks bundle run main_etl_hotel_job`
+3. **Executar:** `databricks bundle run Job_Orquestrador_Hotelaria`
 
 ---
 

@@ -1,7 +1,7 @@
 resources:
   jobs:
     main_etl_hotel_job:
-      name: "[${bundle.target}] Job Orquestrador Hotelaria"
+      name: "[${bundle.target}] Job_Orquestrador_Hotelaria"
       
       tasks:
         # Task 01: Dispara o Pipeline Bronze
