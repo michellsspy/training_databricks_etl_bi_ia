@@ -1,4 +1,4 @@
-# This is a Databricks asset bundle definition for my_project.
+# Databricks asset bundle definition - Refatorado para Unity Catalog (Serverless Only)
 bundle:
   name: my_project
   uuid: 4b77879e-ff53-473c-81ac-80d6b7b80c18
@@ -14,9 +14,9 @@ artifacts:
 
 variables:
   catalog:
-    description: The catalog to use
+    description: O catálogo alvo (Unity Catalog)
   schema:
-    description: The schema to use
+    description: O schema alvo (Camada Bronze/Silver/Gold)
 
 targets:
   dev:
@@ -25,8 +25,9 @@ targets:
     workspace:
       host: https://dbc-57328b27-9cd1.cloud.databricks.com
     variables:
-      catalog: hive_metastore
-      # Ajustado para seguir o padrão [ambiente].[sistema]_[entidade] do seu guia
+      # Alterado de hive_metastore para o seu catálogo real
+      catalog: development 
+      # Mantendo seu padrão de nomenclatura para evitar colisão em dev
       schema: dev_${workspace.current_user.short_name}_medallion 
   prod:
     mode: production
@@ -34,8 +35,8 @@ targets:
       host: https://dbc-57328b27-9cd1.cloud.databricks.com
       root_path: /Workspace/Users/michel.treino01@gmail.com/.bundle/${bundle.name}/${bundle.target}
     variables:
-      catalog: hive_metastore
-      schema: prd_sales_medallion
+      catalog: production
+      schema: bronze # Ou o schema específico de produção que definir
     permissions:
       - user_name: michel.treino01@gmail.com
         level: CAN_MANAGE

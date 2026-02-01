@@ -1,17 +1,15 @@
-# The main pipeline for my_project - Arquitetura Medallion
 resources:
   pipelines:
     my_project_etl:
       name: ${bundle.target}_my_project_etl
-      catalog: ${var.catalog}
-      target: ${var.schema} # No DLT, 'target' define o schema de destino
+      # Use o catálogo que você criou
+      catalog: development
+      # O target no DLT é o SCHEMA de destino
+      target: bronze 
       serverless: true
 
       libraries:
-        # Mapeando especificamente a pasta de transformações
-        - notebook:
+        - file:
             path: ../src/my_project_etl/transformations/02_bronze/bronze_hospedes.py
 
-      configuration:
-        # Variáveis úteis para usar dentro do código Python se necessário
-        bundle.training: "true"
+      # Remova a seção 'clusters' se ela existir, pois serverless não aceita definições de cluster

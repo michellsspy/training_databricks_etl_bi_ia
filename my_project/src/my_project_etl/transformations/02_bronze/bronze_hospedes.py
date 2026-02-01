@@ -4,7 +4,7 @@ from pyspark.sql import functions as F
 # Configurações de Governança
 SISTEMA = "hotel_management"
 ENTIDADE = "hospedes"
-SOURCE_TABLE = "dev.transient.source_hospedes"
+SOURCE_TABLE = "development.transient.source_hospedes"
 
 @dlt.table(
     name=f"bronze_{SISTEMA}_{ENTIDADE}",
