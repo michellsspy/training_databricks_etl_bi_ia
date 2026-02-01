@@ -133,7 +133,6 @@ SELECT 'Reservas' as Entidade, COUNT(*) as Total FROM development.transient.sour
 
 ```
 
-```markdown
 # 3. Camada Bronze: Ingestão Incremental e Qualidade
 
 Esta etapa documenta a transição dos dados da zona `transient` para a camada `bronze`, onde os dados são persistidos de forma imutável e enriquecidos com metadados de auditoria.
