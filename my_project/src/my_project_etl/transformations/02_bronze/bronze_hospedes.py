@@ -15,6 +15,10 @@ SOURCE_TABLE = "development.transient.source_hospedes"
         "pipelines.autoOptimize.zOrderCols": "_metadata_ingestion_at"
     }
 )
+# --- TESTES DE QUALIDADE (EXPECTATIONS) ---
+@dlt.expect_or_fail("id_nao_nulo", "hospede_id IS NOT NULL")
+@dlt.expect("cpf_formato_valido", "LENGTH(cpf) >= 11")
+@dlt.expect_or_drop("nome_presente", "nome_completo IS NOT NULL")
 def bronze_hospedes():
     # 1. Leitura Incremental
     df_raw = spark.readStream.table(SOURCE_TABLE)

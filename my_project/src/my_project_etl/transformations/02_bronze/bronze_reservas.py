@@ -8,8 +8,16 @@ SOURCE_TABLE = "development.transient.source_reservas"
 @dlt.table(
     name=f"bronze_{SISTEMA}_{ENTIDADE}",
     comment=f"Tabela Bronze com dados brutos de {ENTIDADE}.",
-    table_properties={"quality": "bronze", "delta.enableChangeDataFeed": "true"}
+    table_properties={
+        "quality": "bronze",
+        "delta.enableChangeDataFeed": "true",
+        "pipelines.autoOptimize.zOrderCols": "_metadata_ingestion_at"
+    }
 )
+# --- TESTES DE QUALIDADE (EXPECTATIONS) ---
+@dlt.expect_or_fail("reserva_id_valido", "reserva_id IS NOT NULL")
+@dlt.expect_or_drop("datas_logicas", "data_checkout >= data_checkin")
+@dlt.expect("status_conhecido", "status_reserva IN ('Concluída', 'Hospedado', 'Confirmada', 'Cancelada')")
 def bronze_reservas():
     df_raw = spark.readStream.table(SOURCE_TABLE)
     

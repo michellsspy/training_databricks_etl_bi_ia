@@ -8,8 +8,16 @@ SOURCE_TABLE = "development.transient.source_quartos"
 @dlt.table(
     name=f"bronze_{SISTEMA}_{ENTIDADE}",
     comment=f"Tabela Bronze com dados brutos de {ENTIDADE}.",
-    table_properties={"quality": "bronze", "delta.enableChangeDataFeed": "true"}
+    table_properties={
+        "quality": "bronze",
+        "delta.enableChangeDataFeed": "true",
+        "pipelines.autoOptimize.zOrderCols": "_metadata_ingestion_at"
+    }
 )
+# --- TESTES DE QUALIDADE (EXPECTATIONS) ---
+@dlt.expect_or_fail("quarto_id_valido", "quarto_id IS NOT NULL")
+@dlt.expect_or_fail("hotel_fk_presente", "hotel_id IS NOT NULL")
+@dlt.expect("preco_positivo", "preco_diaria_base > 0")
 def bronze_quartos():
     df_raw = spark.readStream.table(SOURCE_TABLE)
     

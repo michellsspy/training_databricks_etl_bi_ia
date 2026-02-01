@@ -1,10 +1,23 @@
 import dlt
 from pyspark.sql import functions as F
 
-SISTEMA, ENTIDADE = "hotel_management", "consumos"
-SOURCE_TABLE = f"development.transient.source_{ENTIDADE}"
+SISTEMA = "hotel_management"
+ENTIDADE = "consumos"
+SOURCE_TABLE = "development.transient.source_consumos"
 
-@dlt.table(name=f"bronze_{SISTEMA}_{ENTIDADE}", table_properties={"quality": "bronze"})
+@dlt.table(
+    name=f"bronze_{SISTEMA}_{ENTIDADE}",
+    comment=f"Tabela Bronze com dados brutos de {ENTIDADE}.",
+    table_properties={
+        "quality": "bronze",
+        "delta.enableChangeDataFeed": "true",
+        "pipelines.autoOptimize.zOrderCols": "_metadata_ingestion_at"
+    }
+)
+# --- TESTES DE QUALIDADE (EXPECTATIONS) ---
+@dlt.expect_or_fail("consumo_id_valido", "consumo_id IS NOT NULL")
+@dlt.expect_or_drop("valor_nao_negativo", "valor_total_consumo >= 0")
+@dlt.expect("servico_nome_presente", "nome_servico IS NOT NULL")
 def bronze_consumos():
     df_raw = spark.readStream.table(SOURCE_TABLE)
     cols = [F.coalesce(F.col(c).cast("string"), F.lit("")) for c in df_raw.columns]
