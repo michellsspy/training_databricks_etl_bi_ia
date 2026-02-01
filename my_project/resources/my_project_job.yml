@@ -1,0 +1,22 @@
+resources:
+  jobs:
+    main_etl_hotel_job:
+      name: "[${bundle.target}] Job Orquestrador Hotelaria"
+      
+      tasks:
+        # Task 01: Dispara o Pipeline Bronze
+        - task_key: run_bronze_pipeline
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.my_project_bronze.id}
+
+        # Task 02: Dispara o Pipeline Silver APÓS o Bronze
+        - task_key: run_silver_pipeline
+          depends_on:
+            - task_key: run_bronze_pipeline  # O SEGREDO ESTÁ AQUI
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.my_project_silver.id}
+      
+      # Opcional: Agendamento (Trigger)
+      # schedule:
+      #   quartz_cron_expression: "0 0 * * * ?" # Roda toda hora
+      #   timezone_id: "America/Sao_Paulo"

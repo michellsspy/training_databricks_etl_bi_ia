@@ -1,11 +1,14 @@
 resources:
   pipelines:
-    my_project_etl:
-      name: ${bundle.target}_my_project_etl
-      catalog: development
+    # --- PIPELINE DA CAMADA BRONZE ---
+    my_project_bronze:
+      name: ${bundle.target}_my_project_bronze
+      catalog: ${var.catalog}
       target: bronze
       serverless: true
-
+      configuration:
+        # Criamos uma variável interna para o Spark/DLT
+        project.catalog: ${var.catalog}
       libraries:
         - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_hospedes.py }
         - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_hoteis.py }
@@ -14,3 +17,21 @@ resources:
         - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_consumos.py }
         - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_faturas.py }
         - file: { path: ../src/my_project_etl/transformations/02_bronze/bronze_reservas_ota.py }
+
+    # --- PIPELINE DA CAMADA SILVER ---
+    my_project_silver:
+      name: ${bundle.target}_my_project_silver
+      catalog: ${var.catalog}
+      target: silver
+      serverless: true
+      configuration:
+        # Criamos uma variável interna para o Spark/DLT
+        project.catalog: ${var.catalog}
+      libraries:
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_hospedes.py }
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_reservas.py }
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_hoteis.py }
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_quartos.py }
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_consumos.py }
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_faturas.py }
+        - file: { path: ../src/my_project_etl/transformations/03_silver/silver_reservas_ota.py }

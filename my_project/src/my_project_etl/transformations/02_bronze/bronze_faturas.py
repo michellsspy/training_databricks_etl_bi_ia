@@ -1,9 +1,13 @@
 import dlt
 from pyspark.sql import functions as F
 
+# Capturamos o catálogo configurado no YAML do pipeline
+# Se não houver nada, ele usa 'development' como padrão (segurança)
+current_catalog = spark.conf.get("project.catalog", "development")
+
 SISTEMA = "hotel_management"
 ENTIDADE = "faturas"
-SOURCE_TABLE = "development.transient.source_faturas"
+SOURCE_TABLE = f"{current_catalog}.transient.source_faturas"
 
 @dlt.table(
     name=f"bronze_{SISTEMA}_{ENTIDADE}",
