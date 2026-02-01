@@ -158,21 +158,40 @@ Implementamos regras de sanidade técnica para proteger o Lakehouse contra dados
 Abaixo, o padrão utilizado para todas as 07 entidades do domínio de hotelaria:
 
 ```python
-@dlt.table(name="bronze_hotel_management_reservas")
+import dlt
+from pyspark.sql import functions as F
+
+SISTEMA = "hotel_management"
+ENTIDADE = "reservas"
+SOURCE_TABLE = "development.transient.source_reservas"
+
+@dlt.table(
+    name=f"bronze_{SISTEMA}_{ENTIDADE}",
+    comment=f"Tabela Bronze com dados brutos de {ENTIDADE}.",
+    table_properties={
+        "quality": "bronze",
+        "delta.enableChangeDataFeed": "true",
+        "pipelines.autoOptimize.zOrderCols": "_metadata_ingestion_at"
+    }
+)
+# --- TESTES DE QUALIDADE (EXPECTATIONS) ---
 @dlt.expect_or_fail("reserva_id_valido", "reserva_id IS NOT NULL")
 @dlt.expect_or_drop("datas_logicas", "data_checkout >= data_checkin")
+@dlt.expect("status_conhecido", "status_reserva IN ('Concluída', 'Hospedado', 'Confirmada', 'Cancelada')")
 def bronze_reservas():
-    df_raw = spark.readStream.table("development.transient.source_reservas")
+    df_raw = spark.readStream.table(SOURCE_TABLE)
     
-    # Geração de Hash e Binário com correção de encoding UTF-8
-    cols = [F.coalesce(F.col(c).cast("string"), F.lit("")) for c in df_raw.columns]
-    line_concat = F.concat_ws("||", *cols)
-    
-    return (df_raw
-            .withColumn("_metadata_source_system", F.lit("hotel_management"))
-            .withColumn("_metadata_ingestion_at", F.current_timestamp())
-            .withColumn("_metadata_row_hash", F.sha2(line_concat, 256))
-            .withColumn("_metadata_row_bin", F.encode(line_concat, "UTF-8")))
+    columns_to_concat = [F.coalesce(F.col(c).cast("string"), F.lit("")) for c in df_raw.columns]
+    line_concat = F.concat_ws("||", *columns_to_concat)
+
+    return (
+        df_raw
+        .withColumn("_metadata_source_system", F.lit(SISTEMA))
+        .withColumn("_metadata_ingestion_at", F.current_timestamp())
+        .withColumn("_metadata_source_file", F.lit(SOURCE_TABLE))
+        .withColumn("_metadata_row_hash", F.sha2(line_concat, 256))
+        .withColumn("_metadata_row_bin", F.encode(line_concat, "UTF-8"))
+    )
 
 ```
 
