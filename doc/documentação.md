@@ -1,5 +1,3 @@
-Entendido, Michel. Sem interrupções, sem explicações fora do bloco e sem marcações de citação. Um **único bloco de código Markdown** contendo toda a documentação da etapa de instalação e setup.
-
 ```markdown
 # Projeto ETL/ELT Hotelaria - Arquitetura Medallion
 
