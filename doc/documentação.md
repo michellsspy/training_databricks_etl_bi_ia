@@ -1,4 +1,3 @@
-```markdown
 # Projeto ETL/ELT Hotelaria - Arquitetura Medallion
 
 Este documento detalha o processo de configuração, inicialização e implementação da camada Bronze do Lakehouse, utilizando Databricks Asset Bundles (DABs) e Delta Live Tables (DLT).
@@ -91,7 +90,6 @@ databricks bundle deploy
 
 ```
 
-```markdown
 # 2. Geração de Dados e Camada Transient
 
 Esta etapa documenta a estratégia para popular o Lakehouse com dados sintéticos de alta fidelidade, simulando um sistema de gestão hoteleira real.
@@ -190,10 +188,3 @@ databricks bundle run my_project_etl
 
 ```
 
-```
-
-
-
-Com a documentação da Bronze finalizada e validada, estamos prontos para avançar para a **Camada Silver**, focando em modelagem dimensional e histórico. Deseja iniciar a definição dos requisitos da Silver?
-
-```
