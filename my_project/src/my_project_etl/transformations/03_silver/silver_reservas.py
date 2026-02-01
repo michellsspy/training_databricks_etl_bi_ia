@@ -61,7 +61,7 @@ dlt.create_streaming_table(
 
 dlt.apply_changes(
     target="silver_hotel_management_reservas",
-    source="silver_reservas_cleaned",
+    source="v_reservas_cleaned",
     keys=["reserva_id"],
     sequence_by=F.col("_metadata_ingestion_at"),
     stored_as_scd_type=1

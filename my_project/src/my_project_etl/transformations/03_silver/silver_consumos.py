@@ -49,7 +49,7 @@ dlt.create_streaming_table(
 
 dlt.apply_changes(
     target="silver_hotel_management_consumos",
-    source="silver_consumos_cleaned",
+    source="v_consumos_cleaned",
     keys=["consumo_id"],
     sequence_by=F.col("_metadata_ingestion_at"),
     stored_as_scd_type=1

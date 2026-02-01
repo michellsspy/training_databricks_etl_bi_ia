@@ -2,7 +2,7 @@ resources:
   pipelines:
     # --- PIPELINE DA CAMADA BRONZE ---
     my_project_bronze:
-      name: ${bundle.target}_my_project_bronze
+      name: "[${bundle.target}] my_project_bronze"
       catalog: ${var.catalog}
       target: bronze
       serverless: true
@@ -20,7 +20,7 @@ resources:
 
     # --- PIPELINE DA CAMADA SILVER ---
     my_project_silver:
-      name: ${bundle.target}_my_project_silver
+      name: "[${bundle.target}] my_project_silver"
       catalog: ${var.catalog}
       target: silver
       serverless: true

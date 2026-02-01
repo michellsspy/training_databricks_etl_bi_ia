@@ -56,7 +56,7 @@ dlt.create_streaming_table(
 
 dlt.apply_changes(
     target="silver_hotel_management_faturas",
-    source="silver_faturas_cleaned",
+    source="v_faturas_cleaned",
     keys=["fatura_id"],
     sequence_by=F.col("_metadata_ingestion_at"),
     stored_as_scd_type=1
